@@ -1,0 +1,436 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Just Ask.!</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .chat-window {
+      animation: slideUp 0.25s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .typing-dot {
+      animation: pulse 1s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes pulse {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-3px); }
+    }
+
+    #messages {
+      scrollbar-width: thin;
+      scrollbar-color: #d1d5db transparent;
+    }
+
+    .message-text {
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-100">
+
+  <!-- Demo page background -->
+  <main class="flex min-h-screen flex-col items-center justify-center px-6 text-center">
+    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-3xl text-white shadow-lg">
+      ✦
+    </div>
+
+    <h1 class="text-3xl font-bold tracking-tight text-slate-800">
+     Just Ask.!
+    </h1>
+
+    <p class="mt-3 max-w-md text-slate-500">
+       You can just ask whatever doubts you have and get it answered...! Open the chat bubble in the
+      bottom-right corner to start a conversation.
+    </p>
+
+    <p class="mt-6 text-sm text-slate-400">
+      Powered by n8n automation
+    </p>
+  </main>
+
+  <!-- Floating Chat Widget -->
+  <div class="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-4 sm:bottom-8 sm:right-8">
+
+    <!-- Chat Panel -->
+    <section
+      id="chatPanel"
+      class="chat-window hidden h-[min(600px,calc(100dvh-120px))] w-[min(380px,calc(100vw-32px)] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl"
+      aria-label="Nova AI chat"
+    >
+      <!-- Header -->
+      <header class="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-4 text-white">
+        <div class="flex items-center gap-3">
+          <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/20 text-xl">
+            ✦
+          </div>
+
+          <div>
+            <h2 class="font-semibold">Nova AI</h2>
+            <div class="mt-0.5 flex items-center gap-1.5 text-xs text-indigo-100">
+              <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
+              Ready to help
+            </div>
+          </div>
+        </div>
+
+        <button
+          id="closeChat"
+          type="button"
+          class="rounded-full p-2 text-xl transition hover:bg-white/15"
+          aria-label="Close chat"
+        >×</button>
+      </header>
+
+      <!-- Message History -->
+      <div
+        id="messages"
+        class="flex h-[calc(100%-150px)] flex-col gap-4 overflow-y-auto bg-slate-50 px-4 py-5"
+        role="log"
+        aria-live="polite"
+        aria-label="Message history"
+      >
+        <div class="flex justify-start">
+          <div class="max-w-[85%] rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm">
+            Hi there! 👋 I'm Nova, your AI assistant. How can I help you today?
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Input -->
+      <form id="chatForm" class="border-t border-slate-200 bg-white p-4">
+        <div class="flex items-end gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-2 transition focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
+          <textarea
+            id="messageInput"
+            rows="1"
+            maxlength="10000"
+            placeholder="Type your message..."
+            aria-label="Type your message"
+            class="max-h-28 min-w-0 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400"
+            required
+          ></textarea>
+
+          <button
+            id="sendButton"
+            type="submit"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Send message"
+            title="Send message"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg"
+              width="20" height="20" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="m22 2-7 20-4-9-9-4Z"></path>
+              <path d="M22 2 11 13"></path>
+            </svg>
+          </button>
+        </div>
+
+        <p id="status" class="mt-2 min-h-4 text-center text-xs text-slate-400">
+          Press Enter to send · Shift + Enter for a new line
+        </p>
+      </form>
+    </section>
+
+    <!-- Floating Toggle Button -->
+    <button
+      id="toggleChat"
+      type="button"
+      class="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-white shadow-xl transition duration-200 hover:scale-105 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200"
+      aria-label="Open chat"
+      aria-expanded="false"
+    >
+      <svg id="chatIcon" xmlns="http://www.w3.org/2000/svg"
+        width="28" height="28" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round"
+        aria-hidden="true">
+        <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8Z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <script>
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+
+    const WEBHOOK_URL = "https://YOUR_N8N_HOST/webhook/YOUR_WEBHOOK_ID";
+
+    // Set this to match your n8n workflow response.
+    // Supported examples: { "output": "Hello!" }, { "text": "Hello!" },
+    // { "response": "Hello!" }, { "message": "Hello!" }, or plain text.
+    const BOT_NAME = "Nova AI";
+
+    // ============================================
+    // ELEMENTS
+    // ============================================
+
+    const chatPanel = document.getElementById("chatPanel");
+    const toggleChat = document.getElementById("toggleChat");
+    const closeChat = document.getElementById("closeChat");
+    const chatForm = document.getElementById("chatForm");
+    const messageInput = document.getElementById("messageInput");
+    const messages = document.getElementById("messages");
+    const sendButton = document.getElementById("sendButton");
+    const status = document.getElementById("status");
+
+    let isSending = false;
+    let typingIndicator = null;
+
+    // ============================================
+    // OPEN / CLOSE CHAT
+    // ============================================
+
+    function setChatOpen(isOpen) {
+      chatPanel.classList.toggle("hidden", !isOpen);
+      toggleChat.setAttribute("aria-expanded", String(isOpen));
+      toggleChat.setAttribute(
+        "aria-label",
+        isOpen ? "Close chat" : "Open chat"
+      );
+
+      toggleChat.innerHTML = isOpen
+        ? `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round">
+             <path d="m18 6-12 12M6 6l12 12"/>
+           </svg>`
+        : `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8
+             8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9
+             L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8
+             8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9
+             h.5a8.5 8.5 0 0 1 8 8Z"/>
+           </svg>`;
+
+      if (isOpen) {
+        messageInput.focus();
+        scrollToBottom();
+      }
+    }
+
+    toggleChat.addEventListener("click", () => {
+      setChatOpen(chatPanel.classList.contains("hidden"));
+    });
+
+    closeChat.addEventListener("click", () => setChatOpen(false));
+
+    // ============================================
+    // CHAT UI HELPERS
+    // ============================================
+
+    function scrollToBottom() {
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function appendMessage(text, sender) {
+      const row = document.createElement("div");
+      row.className = sender === "user"
+        ? "flex justify-end"
+        : "flex justify-start";
+
+      const bubble = document.createElement("div");
+      bubble.className = sender === "user"
+        ? "message-text max-w-[85%] rounded-2xl rounded-tr-sm bg-indigo-600 px-4 py-3 text-sm leading-relaxed text-white shadow-sm"
+        : "message-text max-w-[85%] rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm";
+
+      // textContent prevents HTML injection from user or webhook content.
+      bubble.textContent = text;
+
+      row.appendChild(bubble);
+      messages.appendChild(row);
+      scrollToBottom();
+
+      return row;
+    }
+
+    function showTypingIndicator() {
+      const row = document.createElement("div");
+      row.className = "flex justify-start";
+      row.setAttribute("aria-label", `${BOT_NAME} is typing`);
+
+      const bubble = document.createElement("div");
+      bubble.className =
+        "flex items-center gap-1 rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-4 py-4 shadow-sm";
+
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement("span");
+        dot.className = "typing-dot h-2 w-2 rounded-full bg-indigo-400";
+        bubble.appendChild(dot);
+      }
+
+      row.appendChild(bubble);
+      messages.appendChild(row);
+      scrollToBottom();
+
+      typingIndicator = row;
+    }
+
+    function hideTypingIndicator() {
+      if (typingIndicator) {
+        typingIndicator.remove();
+        typingIndicator = null;
+      }
+    }
+
+    function extractBotText(data) {
+      if (typeof data === "string") {
+        return data;
+      }
+
+      if (data && typeof data === "object") {
+        // Common n8n response formats.
+        const keys = ["output", "text", "response", "message", "reply"];
+
+        for (const key of keys) {
+          if (typeof data[key] === "string") {
+            return data[key];
+          }
+        }
+
+        // Some workflows return an array of output items.
+        if (Array.isArray(data) && data.length > 0) {
+          return extractBotText(data[0]);
+        }
+      }
+
+      throw new Error(
+        "The webhook returned an unexpected response format."
+      );
+    }
+
+    // ============================================
+    // SEND MESSAGE TO N8N
+    // ============================================
+
+    async function sendMessage(message) {
+      if (isSending || !message.trim()) return;
+
+      if (
+        WEBHOOK_URL.includes("YOUR_N8N_HOST") ||
+        WEBHOOK_URL.includes("YOUR_WEBHOOK_ID")
+      ) {
+        appendMessage(
+          "Please configure your n8n webhook URL in the JavaScript settings.",
+          "bot"
+        );
+        return;
+      }
+
+      isSending = true;
+      sendButton.disabled = true;
+      messageInput.disabled = true;
+      status.textContent = "Sending your message...";
+
+      appendMessage(message, "user");
+      showTypingIndicator();
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/plain"
+          },
+          body: JSON.stringify({
+            chatInput: message,
+            message: message
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Webhook request failed (${response.status}).`);
+        }
+
+        const contentType = response.headers.get("content-type") || "";
+
+        let data;
+
+        if (contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          data = await response.text();
+        }
+
+        const botReply = extractBotText(data);
+
+        hideTypingIndicator();
+        appendMessage(botReply, "bot");
+        status.textContent = "Message delivered";
+      } catch (error) {
+        hideTypingIndicator();
+
+        console.error("Chat webhook error:", error);
+
+        appendMessage(
+          "Sorry, I couldn't connect to the assistant. Please try again.",
+          "bot"
+        );
+
+        status.textContent =
+          "Connection failed. Check the webhook and try again.";
+      } finally {
+        isSending = false;
+        sendButton.disabled = false;
+        messageInput.disabled = false;
+        messageInput.focus();
+      }
+    }
+
+    // ============================================
+    // FORM SUBMISSION & KEYBOARD HANDLING
+    // ============================================
+
+    chatForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const message = messageInput.value.trim();
+      if (!message || isSending) return;
+
+      messageInput.value = "";
+      messageInput.style.height = "auto";
+
+      await sendMessage(message);
+    });
+
+    messageInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        chatForm.requestSubmit();
+      }
+    });
+
+    messageInput.addEventListener("input", () => {
+      messageInput.style.height = "auto";
+      messageInput.style.height =
+        Math.min(messageInput.scrollHeight, 112) + "px";
+    });
+  </script>
+
+</body>
+</html>
