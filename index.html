@@ -19,43 +19,25 @@
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: Arial, sans-serif;
-  color: white;
-  background:
-    radial-gradient(ellipse at 80% 15%, #9a4b39 0%, transparent 35%),
-    radial-gradient(ellipse at 15% 80%, #075b77 0%, transparent 40%),
-    linear-gradient(135deg, #061432, #092c63 55%, #101c3e);
-  overflow-x: hidden;
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    color: white;
+    overflow-x: hidden;
+
+    background:
+        linear-gradient(
+            rgba(3, 15, 40, 0.20),
+            rgba(3, 15, 40, 0.35)
+        ),
+        url("india-background.png");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
-/* Decorative Indian-inspired background */
-body::before {
-  content: "✺";
-  position: fixed;
-  top: 5%;
-  right: 12%;
-  font-size: min(45vw, 550px);
-  color: rgba(120,190,255,.055);
-  pointer-events: none;
-  z-index: -1;
-}
-
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  background: linear-gradient(
-    120deg,
-    rgba(255,140,30,.10),
-    transparent 35%,
-    transparent 65%,
-    rgba(35,190,100,.10)
-  );
-}
 
 header {
   display: flex;
@@ -131,16 +113,20 @@ main {
 
 /* Main chat window */
 .chat {
-  height: min(75vh, 750px);
-  min-height: 480px;
-  display: flex;
-  flex-direction: column;
-  border-radius: 24px;
-  overflow: hidden;
-  border: 1px solid #ffffff55;
-  background: rgba(7, 25, 58, .68);
-  backdrop-filter: blur(22px);
-  box-shadow: 0 25px 80px #0007;
+    height: min(75vh, 750px);
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 24px;
+    overflow: hidden;
+
+    /* Glass effect */
+    background: rgba(7, 25, 58, 0.68);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 25px 80px #0007;
 }
 
 .chat-header {
